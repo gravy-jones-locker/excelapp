@@ -39,8 +39,8 @@ sudo cp excelapp/_settings.py excelapp/settings.py
 python3 manage.py migrate
 
 cd ..
-sudo chmod a+rwx apps
-sudo chmod a+rwx logs
+sudo chmod a+rwx -R excelapp
+sudo chmod a+rwx -R logs
 
 sudo service nginx restart
 sudo service uwsgi restart
