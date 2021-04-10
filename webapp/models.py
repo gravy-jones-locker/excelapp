@@ -35,7 +35,8 @@ class UploadFile(models.Model):
         self.out_path = self.content.name.replace('input', 'output')
 
         # Run script - check_output waits for completion
-        cmd = [config.PYTHON_PATH,
+        cmd = ['sudo',
+               config.PYTHON_PATH,
                config.SCRIPT_PATH,
                self.content.name,
                self.out_path]
