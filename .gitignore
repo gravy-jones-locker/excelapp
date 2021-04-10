@@ -1,0 +1,4 @@
+/webapp/static/input/*
+/webapp/static/output/*
+/config.py
+/db.sqlite3
