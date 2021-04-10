@@ -51,7 +51,12 @@ class UploadFile(models.Model):
 
         """Delete db record and saved files associated with record"""
 
-        os.remove(self.out_path)
-        os.remove(self.content.name)
+        try:
+            os.remove(self.content.name)
+            os.remove(self.out_path)
+        except:
+
+            # In case of error processing the input file
+            pass
 
         self.delete()

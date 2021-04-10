@@ -2,3 +2,4 @@
 /webapp/static/output/*
 /config.py
 /db.sqlite3
+/excelapp/settings.py
