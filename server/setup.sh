@@ -17,6 +17,9 @@ pip3 install wheel
 pip3 install uwsgi
 pip3 install django
 pip3 install pandas
+pip3 install xlrd
+pip3 install openpyxl
+pip3 install xlsxwriter
 
 mkdir logs
 mkdir excelapp
@@ -38,9 +41,7 @@ sudo cp excelapp/_settings.py excelapp/settings.py
 
 python3 manage.py migrate
 
-cd ..
-sudo chmod a+rwx -R excelapp
-sudo chmod a+rwx -R logs
+sudo chmown ubuntu -R /apps
 
 sudo service nginx restart
 sudo service uwsgi restart
