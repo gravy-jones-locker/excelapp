@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 import time
 from webapp.models import UploadFile
+import traceback as tb
 
 # Create your views here.
 
@@ -20,11 +21,12 @@ def upload_xls(request):
     try:
         # Stop the stored files/records from breaching the limit
         UploadFile.objects.rm_surplus()
-        
+
         xls = request.FILES['file']
         xls_db = UploadFile.objects.create(content=xls).process()
 
         return JsonResponse({'fname': xls_db.fname}, status=200)
 
     except:
+        print(tb.format_exc())
         return HttpResponse(status=201)
