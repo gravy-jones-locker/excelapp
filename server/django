@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name public.ip.here;
+    server_name 127.0.0.1;
 
     location / {
         # django running in uWSGI
