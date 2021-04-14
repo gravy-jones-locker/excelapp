@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 import time
 from webapp.models import UploadFile
-import traceback as tb
+from webapp import utils
+import os
 
 # Create your views here.
 
@@ -10,7 +11,7 @@ def index(request):
 
     """Render homepage in applicable state"""
 
-    return render(request, 'index.html', {'status': 'processed'})
+    return render(request, 'index.html')
 
 def upload_xls(request):
 
@@ -27,6 +28,7 @@ def upload_xls(request):
 
         return JsonResponse({'fname': xls_db.fname}, status=200)
 
-    except:
-        print(tb.format_exc())
-        return HttpResponse(status=201)
+    except Exception as e:
+        status = utils.handle_error(e)
+
+    return HttpResponse(status=status)      

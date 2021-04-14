@@ -3,6 +3,8 @@ import config
 import shutil
 import os
 import subprocess
+from webapp.utils import ConversionError
+from webapp import utils
 
 # Create your models here.
 
@@ -35,17 +37,18 @@ class UploadFile(models.Model):
         self.out_path = self.content.name.replace('input', 'output')
 
         # Run script - check_output waits for completion
-        cmd = [config.PYTHON_PATH,
-               config.SCRIPT_PATH,
-               self.content.name,
-               self.out_path]
-
-        res = subprocess.check_output(cmd)
+        cmd = self._cmd()
 
         self.fname = os.path.split(self.content.name)[1]
-        self.save()  # Commits new fname/out_path to db
-        
-        return self
+        self.save()
+
+        try:
+            res = subprocess.check_output(cmd)
+            return self
+
+        except:
+            utils.notify_error_conversion(self.fname)
+            raise ConversionError
 
     def full_delete(self):
 
@@ -60,3 +63,10 @@ class UploadFile(models.Model):
             pass
 
         self.delete()
+
+    def _cmd(self):
+
+        return [config.PYTHON_PATH,
+                config.SCRIPT_PATH,
+                self.content.name,
+                self.out_path]

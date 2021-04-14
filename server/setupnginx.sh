@@ -42,7 +42,7 @@ sudo mkdir webapp/static/output
 
 python3 manage.py migrate
 
-sudo chmown ubuntu -R /apps
+sudo chown ubuntu -R /home/disney
 
 sudo service nginx restart
 sudo service uwsgi restart

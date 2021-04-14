@@ -239,7 +239,9 @@
         // Check response status and if OK download processed file
         .then(function(resp) {
             if (resp.status == 201) {
-                alert("There was an error - please try again");
+                alert("Fehler beim Konvertieren der Datei. Der Admin weiß Bescheid und wird sich bei dir melden");
+            } else if (resp.status == 202) {
+                alert("Netzwerkfehler");
             } else {
                 resp.json().then(function(resp_data) {
                 doDownload(resp_data);
