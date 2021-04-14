@@ -2,7 +2,7 @@ sudo apt-get -y update
 
 sudo apt-get -y install build-essential
 sudo apt-get -y install python3-dev python3-venv python3-pip
-sudo apt-get -y libapache2-mod-wsgi-py3
+sudo apt-get -y uwsgi nginx uwsgi-plugin-python3
 
 # Change this to wherever you want everything to be
 mkdir /home/disney

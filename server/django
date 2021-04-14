@@ -12,6 +12,6 @@ server {
 
     location /static/ {
         autoindex on;
-        alias    /apps/excelapp/webapp/static/;
+        alias    /home/disney/excelapp/webapp/static/;
     }
 }
