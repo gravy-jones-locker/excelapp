@@ -15,7 +15,7 @@ class CustomManager(models.Manager):
         """Remove any files/records over the specified limit"""
         
         while self.count() > config.FILE_LIMIT:
-            self.last().full_delete()
+            self.first().full_delete()
 
 class UploadFile(models.Model):
 

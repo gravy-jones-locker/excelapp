@@ -25,16 +25,24 @@ mkdir excelapp
 cd excelapp
 git clone https://github.com/gravy-jones-locker/excelapp.git .
 
+# !! edit for setup-specific ip details
+sudo cp server/django /etc/nginx/sites-enabled/django
+
 # !! edit for setup-specific directories
-cp _config.py config.py
+sudo cp server/django.ini /etc/uwsgi/apps-enabled/django.ini
+
+# !! edit for setup-specific directories
+sudo cp _config.py config.py
 
 # !! edit for setup-specific ip details
-cp excelapp/_settings.py excelapp/settings.py
+sudo cp excelapp/_settings.py excelapp/settings.py
 
-mkdir excelapp/webapp/static/input
-mkdir excelapp/webapp/static/output
+sudo mkdir webapp/static/input
+sudo mkdir webapp/static/output
 
 python3 manage.py migrate
 
-sudo chmod a+wrx -R /home/disney
-sudo chmod a+wrx -R /etc/apache2/httpd.conf
+sudo chmown ubuntu -R /apps
+
+sudo service nginx restart
+sudo service uwsgi restart
