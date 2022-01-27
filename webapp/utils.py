@@ -65,6 +65,3 @@ def send_email(subj, msg):
         
         session.login(user, config.EMAIL_PWORD)
         session.sendmail(user, [config.EMAIL_RECIPIENT], msg.as_string())
-
-    
-

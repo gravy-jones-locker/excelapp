@@ -1,34 +1,33 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.http import JsonResponse
+from webapp.models import Task
 import time
-from webapp.models import UploadFile
 from webapp import utils
-import os
-
-# Create your views here.
 
 def index(request):
-
-    """Render homepage in applicable state"""
-
     return render(request, 'index.html')
 
-def upload_xls(request):
-
-    """Upload file and create record"""
-
-    time.sleep(2)  # Hacky way to allow animation to complete
-
+def upload(request, ftype: str):
+    """Process uploaded files and return appropriate response"""
+    time.sleep(5)
+    return index(request)
+    resp_body = {}
     try:
-        # Stop the stored files/records from breaching the limit
-        UploadFile.objects.rm_surplus()
-
-        xls = request.FILES['file']
-        xls_db = UploadFile.objects.create(content=xls).process()
-
-        return JsonResponse({'fname': xls_db.fname}, status=200)
-
+        status = 200
+        Task.objects.rm_surplus()
+        task = Task.objects.goc_from_form(
+            id=request.POST.get('id'),
+            ftype=ftype,
+            fstream=request.FILES["file"])
+        resp_body.update({"uploaded": task.get_ftypes(), "id": task.id})
+        if task._is_ready():
+            resp_body.update({"download": task.process()})
     except Exception as e:
-        status = utils.handle_error(e)
+        status = 201 #utils.handle_error(e)
+    return JsonResponse(resp_body, status=status)      
 
-    return HttpResponse(status=status)      
+def upload_adobe(request):
+    return upload(request, 'adobe')
+
+def upload_adserver(request):
+    return upload(request, 'adserver')

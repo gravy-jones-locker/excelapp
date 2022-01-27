@@ -1,16 +1,17 @@
-(function() {
+function initAnimation( ftype ) {
 
     // Variables to use later
     var content = document.querySelector('.content');
-    var loadingSpinner = document.querySelector('.loading');
-    var uploadForm = document.querySelector('.upload');
-    var uploadIcon = document.querySelector('.upload__icon');
-    var canvas = document.querySelector('.upload__canvas');
+    var div = document.getElementById(ftype);
+    var loadingSpinner = document.getElementById('loading');
+    var uploadForm = div.querySelector('.upload');
+    var uploadIcon = div.querySelector('.upload__icon');
+    var canvas = div.querySelector('.upload__canvas');
     var canvasWidth = canvas.width = canvas.offsetWidth;
     var canvasHeight = canvas.height = canvas.offsetHeight;
     var ctx = canvas.getContext('2d');
     var particles = [];
-    var iconParticlesCount = 1;
+    var iconParticlesCount = 2;
     var animatingUpload = false;
     var fileProcessed = false;
     var playingIconAnimation = false;
@@ -41,11 +42,13 @@
     // Add new particles for the upload icon
     function addIconParticles() {
         iconRect = uploadIcon.getBoundingClientRect(); // get icon dimensions
+        cRect = canvas.getBoundingClientRect();
+        uRect = uploadForm.getBoundingClientRect();
         var i = iconParticlesCount; // how many particles we should add?
         while (i--) {
             // Add a new particle
             createParticle({
-                x: iconRect.left + iconRect.width / 2 + rand(iconRect.width - 10), // position the particle along the icon width in the `x` axis
+                x: iconRect.left + iconRect.width / 2 + rand(iconRect.width - 10) - cRect.left, // position the particle along the icon width in the `x` axis
                 y: iconRect.top + iconRect.height / 2, // position the particle centered in the `y` axis
                 vx: 0, // the particle will not be moved in the `x` axis
                 vy: Math.random() * 2 * iconParticlesCount // value to move the particle in the `y` axis, greater is faster
@@ -168,7 +171,7 @@
         iconAnimation = anime({
             targets: uploadIcon,
             translateY: {
-                value: -canvasHeight / 2 - iconRect.height,
+                value: -canvasHeight - iconRect.height,
                 duration: 1000,
                 easing: 'easeInBack'
             },
@@ -225,7 +228,7 @@
       }
 
     function doUpload(file) {
-
+/* 
         // Load file data into the form object
         var data = new FormData(uploadForm);
         data.append('file', file);
@@ -246,15 +249,16 @@
                 resp.json().then(function(resp_data) {
                 doDownload(resp_data);
                 });
-            } 
-            fileProcessed = true;
-            hideLoading();
-        });      
+            }  */
+            //fileProcessed = true;
+            //hideLoading();
+        return
+        //});      
     }
 
     // Preventing the unwanted behaviours
     ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach(function (event) {
-        document.addEventListener(event, function (e) {
+        div.addEventListener(event, function (e) {
             e.preventDefault();
             e.stopPropagation();
         });
@@ -262,7 +266,7 @@
 
     // Show the upload component on `dragover` and `dragenter` events
     ['dragover', 'dragenter'].forEach(function (event) {
-        document.addEventListener(event, function () {
+        div.addEventListener(event, function () {
             if (!animatingUpload) {
                 uploadForm.classList.add('upload--active');
                 playIconAnimation();
@@ -272,16 +276,16 @@
 
     // Hide the upload component on `dragleave` and `dragend` events
     ['dragleave', 'dragend'].forEach(function (event) {
-        document.addEventListener(event, function () {
+        div.addEventListener(event, function () {
             if (!animatingUpload) {
                 uploadForm.classList.remove('upload--active');
-                pauseIconAnimation();
+                resetAll();
             }
         });
     });
 
     // Handle the `drop` event
-    document.addEventListener('drop', function (e) {
+    div.addEventListener('drop', function (e) {
         if (!animatingUpload) { // If no animation in progress
 
 
@@ -327,4 +331,4 @@
         return Math.random() * value - value / 2;
     }
 
-})();
+};

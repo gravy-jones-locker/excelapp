@@ -1,72 +1,44 @@
+from __future__ import annotations
+
 from django.db import models
 import config
-import shutil
-import os
 import subprocess
-from webapp.utils import ConversionError
-from webapp import utils
 
-# Create your models here.
-
-class CustomManager(models.Manager):
-
-    """Class for managing table-level operations"""
+class TaskManager(models.Manager):
 
     def rm_surplus(self):
-
         """Remove any files/records over the specified limit"""
-        
         while self.count() > config.FILE_LIMIT:
-            self.first().full_delete()
-
-class UploadFile(models.Model):
-
-    """One line db table to store file upload/download"""
-
-    objects = CustomManager()
-
-    content = models.FileField(upload_to='webapp/static/input/')
+            self.first().delete()
     
-    out_path = models.CharField(max_length=255)
-    fname = models.CharField(max_length=255)
+    def goc_from_form(self, id: int, ftype: str, fstream: bytes) -> Task:
+        """Get or create a task from a form id and file bytes stream"""
+        task, _ = self.get_or_create(id=id)
+        file = UploadFile(content=fstream, ftype=ftype, task=task)
+        file.save()
+        return task
+
+class Task(models.Model):
+    """Corresponds to an individual upload/process/download task"""
+
+    objects = TaskManager()
 
     def process(self):
+        """Run the external command to generate the combined data"""
+        return subprocess.check_output([
+            config.PYTHON_PATH,
+            config.SCRIPT_PATH,
+            *self.uploadfile_set.get_byte_args()])
 
-        """Pass the input file to the script and save output"""
+class UploadFileManager(models.Model):
 
-        self.out_path = self.content.name.replace('input', 'output')
+    def get_byte_args(self) -> list:
+        """Get the contents of all files attached to task as byte arguments"""
+        return [self.get(ftype=x).content for x in ['adserver', 'adobe']]
 
-        # Run script - check_output waits for completion
-        cmd = self._cmd()
+class UploadFile(models.Model):
+    """Corresponds to individual uploaded files"""
 
-        self.fname = os.path.split(self.content.name)[1]
-        self.save()
-
-        try:
-            res = subprocess.check_output(cmd)
-            return self
-
-        except:
-            utils.notify_error_conversion(self.fname)
-            raise ConversionError
-
-    def full_delete(self):
-
-        """Delete db record and saved files associated with record"""
-
-        try:
-            os.remove(self.content.name)
-            os.remove(self.out_path)
-        except:
-
-            # In case of error processing the input file
-            pass
-
-        self.delete()
-
-    def _cmd(self):
-
-        return [config.PYTHON_PATH,
-                config.SCRIPT_PATH,
-                self.content.name,
-                self.out_path]
+    content = models.FileField(upload_to='webapp/static/input/')
+    ftype = models.CharField(max_length=255)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
