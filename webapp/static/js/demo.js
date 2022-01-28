@@ -1,9 +1,7 @@
 function initAnimation( ftype ) {
 
     // Variables to use later
-    var content = document.querySelector('.content');
     var div = document.getElementById(ftype);
-    var loadingSpinner = document.getElementById('loading');
     var uploadForm = div.querySelector('.upload');
     var uploadIcon = div.querySelector('.upload__icon');
     var canvas = div.querySelector('.upload__canvas');
@@ -13,8 +11,9 @@ function initAnimation( ftype ) {
     var particles = [];
     var iconParticlesCount = 2;
     var animatingUpload = false;
-    var fileProcessed = false;
+    var animationDisabled = false;
     var playingIconAnimation = false;
+    var id = document.getElementById('id');
     var iconAnimation, iconAnimationFrame, iconRect, droppedFiles, filesCount;
 
     // Create a new particle
@@ -43,7 +42,6 @@ function initAnimation( ftype ) {
     function addIconParticles() {
         iconRect = uploadIcon.getBoundingClientRect(); // get icon dimensions
         cRect = canvas.getBoundingClientRect();
-        uRect = uploadForm.getBoundingClientRect();
         var i = iconParticlesCount; // how many particles we should add?
         while (i--) {
             // Add a new particle
@@ -136,9 +134,10 @@ function initAnimation( ftype ) {
 
         // Now add particles along the way where the user `drop` the files to the icon position
         // Learn more about this kind of animation in the `anime.js` documentation
+        cRect = canvas.getBoundingClientRect();
         anime({
             targets: {x: x, y: y},
-            x: iconRect.left + iconRect.width / 2,
+            x: iconRect.left + iconRect.width / 2 - cRect.left,
             y: iconRect.top + iconRect.height / 2,
             duration: 500,
             delay: delay || 0,
@@ -162,9 +161,6 @@ function initAnimation( ftype ) {
 
     // Translate and scale the upload icon
     function uploadIconAnimation() {
-        if (!fileProcessed) {
-            setTimeout(showLoading, 980);
-        }
         iconParticlesCount += 2; // add more particles per frame, to get a speed up feeling
         anime.remove(uploadIcon); // stop current animations
         // Animate the icon using `translateY` and `scale`
@@ -205,20 +201,25 @@ function initAnimation( ftype ) {
         initIconAnimation();
     }
 
-    function showLoading () {
-        content.style.background = 'rgba(0, 0, 0, 0.5)';
-        loadingSpinner.style.visibility = 'visible';
+    function parseResponse(data) {
+        if (id.getAttribute('value') == '') {
+            id.setAttribute('value', data.id);
+        };
+        if (data.download != undefined) {
+            console.log('ready');
+            doDownload(data.download)
+        };
+        animationDisabled = true;
     }
-
-    function hideLoading () {
-        content.style.background = 'unset';
-        loadingSpinner.style.visibility = 'hidden';
+    function showUploaded() {
+        uploadForm.setAttribute('action', '/');
+        uploadForm.style.visibility = 'visible'
+        uploadForm.style.opacity = '1';
     }
-
-    function doDownload(data) {
+    function doDownload(fname) {
         var element = document.createElement('a');
-        element.setAttribute('href', '/static/output/' + data.fname);
-        element.setAttribute('download', data.fname);
+        element.setAttribute('href', '/static/output/' + fname);
+        element.setAttribute('download', 'output');
       
         element.style.display = 'none';
         document.body.appendChild(element);
@@ -228,10 +229,13 @@ function initAnimation( ftype ) {
       }
 
     function doUpload(file) {
-/* 
+
         // Load file data into the form object
         var data = new FormData(uploadForm);
         data.append('file', file);
+        if (id.getAttribute('value') != '') {
+            data.append('id', id.getAttribute('value'));
+        }
         
         // Make request to upload endpoint
         fetch(uploadForm.getAttribute('action'), {
@@ -242,18 +246,20 @@ function initAnimation( ftype ) {
         // Check response status and if OK download processed file
         .then(function(resp) {
             if (resp.status == 201) {
-                alert("Fehler beim Konvertieren der Datei. Der Admin weiß Bescheid und wird sich bei dir melden");
+                alert("Fehler. Bitte versuche es erneut");
+                location.reload();
             } else if (resp.status == 202) {
                 alert("Netzwerkfehler");
+                location.reload();
             } else {
+                showUploaded();
                 resp.json().then(function(resp_data) {
-                doDownload(resp_data);
+                parseResponse(resp_data);
                 });
-            }  */
-            //fileProcessed = true;
-            //hideLoading();
+            } 
+            fileProcessed = true;
         return
-        //});      
+        });      
     }
 
     // Preventing the unwanted behaviours
@@ -267,7 +273,7 @@ function initAnimation( ftype ) {
     // Show the upload component on `dragover` and `dragenter` events
     ['dragover', 'dragenter'].forEach(function (event) {
         div.addEventListener(event, function () {
-            if (!animatingUpload) {
+            if (!animatingUpload && !animationDisabled) {
                 uploadForm.classList.add('upload--active');
                 playIconAnimation();
             }
@@ -277,7 +283,7 @@ function initAnimation( ftype ) {
     // Hide the upload component on `dragleave` and `dragend` events
     ['dragleave', 'dragend'].forEach(function (event) {
         div.addEventListener(event, function () {
-            if (!animatingUpload) {
+            if (!animatingUpload && !animationDisabled) {
                 uploadForm.classList.remove('upload--active');
                 resetAll();
             }
@@ -286,7 +292,7 @@ function initAnimation( ftype ) {
 
     // Handle the `drop` event
     div.addEventListener('drop', function (e) {
-        if (!animatingUpload) { // If no animation in progress
+        if (!animatingUpload && !animationDisabled) { // If no animation in progress
 
 
             droppedFiles = e.dataTransfer.files; // the files that were dropped
@@ -296,14 +302,10 @@ function initAnimation( ftype ) {
                 fileProcessed = false;
                 animatingUpload = true;
 
+                cRect = canvas.getBoundingClientRect();
                 // Add particles for every file loaded (max 3), also staggered (increasing delay)
-                addParticlesOnDrop(e.pageX + (1 ? rand(100) : 0), e.pageY + (1 ? rand(100) : 0), 200);
+                addParticlesOnDrop(e.pageX - cRect.left + (1 ? rand(100) : 0), e.pageY + (1 ? rand(100) : 0), 200);
                 
-                // Hide the upload component after the animation
-                setTimeout(function () {
-                    uploadForm.classList.remove('upload--active');
-                }, 1650);
-
                 // FUNCTION TO UPLOAD FILES TO SERVER:
                 doUpload(droppedFiles[0]);
 

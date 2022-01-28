@@ -17,7 +17,6 @@ def handle_error(exception):
     
     else:  # For any non-conversion errors return code 202
         
-        notify_error_generic()
         return 202
 
 def notify_error_generic():

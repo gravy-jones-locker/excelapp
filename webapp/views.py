@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from webapp.models import Task
 import time
+import traceback as tb
 from webapp import utils
 
 def index(request):
@@ -9,8 +10,7 @@ def index(request):
 
 def upload(request, ftype: str):
     """Process uploaded files and return appropriate response"""
-    time.sleep(5)
-    return index(request)
+    time.sleep(2)
     resp_body = {}
     try:
         status = 200
@@ -19,11 +19,13 @@ def upload(request, ftype: str):
             id=request.POST.get('id'),
             ftype=ftype,
             fstream=request.FILES["file"])
-        resp_body.update({"uploaded": task.get_ftypes(), "id": task.id})
-        if task._is_ready():
-            resp_body.update({"download": task.process()})
+        ftypes = task.get_ftypes() 
+        resp_body.update({"uploaded": ftypes, "id": task.id})
+        if len(ftypes) == 2:
+            resp_body.update({"download": task.process().decode()})
     except Exception as e:
-        status = 201 #utils.handle_error(e)
+        tb.print_exc()
+        status = utils.handle_error(e)
     return JsonResponse(resp_body, status=status)      
 
 def upload_adobe(request):
