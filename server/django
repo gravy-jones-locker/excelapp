@@ -1,14 +1,18 @@
-server {
-    listen 80;
-    server_name 18.133.33.186;
+<VirtualHost *:80>
 
-    location / {
-        WSGIDaemonProcess morpheus python-home=~/excelapp/.venv python-path=~/excelapp
-        WSGIProcessGroup morpheus
-    }
+    Alias /static ~/excelapp/webapp/static
+    <Directory ~/excelapp/webapp/static>
+        Require all granted
+    </Directory>
 
-    location /static/ {
-        autoindex on;
-        alias    ~/morpheus/excelapp/webapp/static/;
-    }
-}
+    <Directory ~/excelapp/excelapp>
+        <Files wsgi.py>
+            Require all granted
+        </Files>
+    </Directory>
+
+    WSGIDaemonProcess myproject python-home=~/excelapp/.venv python-path=~/excelapp
+    WSGIProcessGroup myproject
+    WSGIScriptAlias / ~/excelapp/excelapp/wsgi.py
+
+</VirtualHost>
