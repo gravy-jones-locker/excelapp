@@ -1,13 +1,10 @@
 server {
     listen 80;
-    server_name 127.0.0.1;
+    server_name 18.133.33.186;
 
     location / {
-        # django running in uWSGI
-        uwsgi_pass unix:///run/uwsgi/app/django/socket;
-        include uwsgi_params;
-        uwsgi_read_timeout 300s;
-        client_max_body_size 32m;
+        WSGIDaemonProcess morpheus python-home=~/excelapp/.venv python-path=~/excelapp
+        WSGIProcessGroup morpheus
     }
 
     location /static/ {
