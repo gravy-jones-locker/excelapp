@@ -12,6 +12,6 @@ server {
 
     location /static/ {
         autoindex on;
-        alias    /home/disney/excelapp/webapp/static/;
+        alias    ~/morpheus/excelapp/webapp/static/;
     }
 }

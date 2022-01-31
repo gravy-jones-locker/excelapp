@@ -5,25 +5,19 @@ sudo apt-get -y install python3-dev python3-venv python3-pip
 sudo apt-get -y libapache2-mod-wsgi-py3
 
 # Change this to wherever you want everything to be
-mkdir /home/disney
-cd /home/disney
+mkdir ~/morpheus
+cd ~/morpheus
 
 python3 -m venv venv
 source venv/bin/activate
 
 pip3 install --upgrade pip
 pip3 install wheel
+pip3 install openpyxl
 pip3 install django
 pip3 install pandas
-pip3 install xlrd
-pip3 install openpyxl
-pip3 install xlsxwriter
 
-mkdir logs
-mkdir excelapp
-
-cd excelapp
-git clone https://github.com/gravy-jones-locker/excelapp.git .
+git clone https://github.com/gravy-jones-locker/excelapp.git
 
 # !! edit for setup-specific directories
 cp _config.py config.py
@@ -36,5 +30,5 @@ mkdir excelapp/webapp/static/output
 
 python3 manage.py migrate
 
-sudo chmod a+wrx -R /home/disney
+sudo chmod a+wrx -R ~/morpheus
 sudo chmod a+wrx -R /etc/apache2/httpd.conf
